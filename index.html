@@ -25,56 +25,57 @@
 
 <script>
     let writer;
+    let voiceCache = [];
     
-    // “大”字的本地坐标数据
+    // 固化的“大”字本地数据
     const DATA_DA = {"char":"大","strokes":["M 8 362 L 992 362","M 510 100 C 510 400 395 725 45 940","M 510 380 C 600 550 780 810 985 935"],"medians":[[500,362],[510,520],[747,657]],"pinyin":["dà"]};
 
-    // 💡 关键修复 1：用一个全局数组把语音存起来，防止 Mac 浏览器把它当垃圾清理掉
-    let voiceCache = [];
-
     function speak(text) {
-        // 🚨 删除了之前的 cancel()，让浏览器的语音引擎自然排队读出
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'zh-CN';
         msg.rate = 0.8;
-        
-        voiceCache.push(msg); // 存入数组“保命”
+        voiceCache.push(msg); // 保护语音不被 Mac 垃圾回收
         window.speechSynthesis.speak(msg);
     }
 
-    function playLocalChar() {
-        // 💡 关键修复 2：只在用户点击按钮的一瞬间，清除并重置语音
-        window.speechSynthesis.cancel();
-        voiceCache = []; 
-        
+    // 将画字逻辑单独提取，确保全生命周期不联网
+    function renderGrid() {
         document.getElementById('target-grid').innerHTML = '';
-
-        // 渲染汉字
         writer = HanziWriter.create('target-grid', '大', {
             width: 200, height: 200, padding: 5,
             showOutline: true,
             strokeAnimationSpeed: 1,
-            delayBetweenStrokes: 1800, // 给语音稍微留出更长的时间排队
+            delayBetweenStrokes: 1800, 
             strokeColor: '#2c3e50',
+            // 强制本地加载
             charDataLoader: (char, onComplete) => onComplete(DATA_DA)
         });
-
-        // 第一句话进入队列
-        speak("大字，一共三画。");
-
-        // 立刻启动动画，HanziWriter 内部的回调会自动把每一笔送入语音队列
-        writer.animateCharacter({
-            onStartStroke: function(num) {
-                const strokeNames = ["横", "撇", "捺"];
-                speak(`第${num + 1}笔，${strokeNames[num]}`);
-            }
-        });
+        return writer.promise; // 返回渲染状态
     }
 
-    // 页面加载时的静态显示
+    // 网页一加载，就用本地数据画出一个静态的字
     window.onload = () => {
-        HanziWriter.create('target-grid', '大', { width: 200, height: 200, padding: 5 });
+        renderGrid();
     };
+
+    function playLocalChar() {
+        window.speechSynthesis.cancel();
+        voiceCache = []; 
+        
+        // 重新渲染，并严格等待渲染完成 (then) 后再播放动画
+        renderGrid().then(() => {
+            speak("大字，一共三画。");
+            
+            setTimeout(() => {
+                writer.animateCharacter({
+                    onStartStroke: function(num) {
+                        const strokeNames = ["横", "撇", "捺"];
+                        speak(`第${num + 1}笔，${strokeNames[num]}`);
+                    }
+                });
+            }, 1800); // 留出充足时间让第一句话说完
+        });
+    }
 </script>
 </body>
 </html>
