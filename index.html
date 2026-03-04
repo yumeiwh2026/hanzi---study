@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GenTech95 AI 汉字实验室</title>
+    <title>GenTech95 汉字实验室</title>
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
     <script src="https://unpkg.com/pinyin-pro"></script>
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #e74c3c; }
         body { font-family: 'PingFang SC', sans-serif; display: flex; flex-direction: column; align-items: center; background-color: #f5f6fa; padding: 20px; }
         .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; max-width: 400px; width: 100%; }
-        #pinyin-display { font-size: 24px; color: var(--accent-color); height: 35px; margin-bottom: 10px; }
+        #pinyin-display { font-size: 28px; color: var(--accent-color); font-weight: bold; height: 40px; margin-bottom: 10px; }
         #target-grid { width: 200px; height: 200px; border: 2px solid var(--primary-color); margin: 20px auto; border-radius: 10px; background: #fff; }
-        .controls { display: flex; gap: 10px; justify-content: center; }
-        input { padding: 10px; border: 1px solid #ccc; border-radius: 8px; width: 60px; text-align: center; font-size: 18px; }
-        button { padding: 10px 20px; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .controls { display: flex; flex-direction: column; gap: 15px; align-items: center; }
+        button { padding: 15px 30px; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 18px; width: 100%; }
+        button:active { transform: scale(0.95); background: #34495e; }
+        #status-bar { font-size: 14px; color: #7f8c8d; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -23,89 +24,60 @@
     <div id="target-grid"></div>
     
     <div class="controls">
-        <input type="text" id="char-input" maxlength="1" value="大">
-        <button id="audio-btn" onclick="unlockAudio()" style="background:#27ae60">1. 激活语音</button>
-        <button onclick="startLearning()">2. 开始学习</button>
+        <button onclick="playLocalChar()">开始学习“大”字 (本地版)</button>
     </div>
+    <div id="status-bar">若无声，请检查 Mac 是否静音</div>
 </div>
 
 <script>
     let writer;
-    const { pinyin } = pinyinPro;
+    
+    // 💡 重点：这就是“大”字的坐标数据，硬编码在此，无惧网络拦截
+    const DATA_DA = {"char":"大","strokes":["M 8 362 L 992 362","M 510 100 C 510 400 395 725 45 940","M 510 380 C 600 550 780 810 985 935"],"medians":[[500,362],[510,520],[747,657]],"pinyin":["dà"]};
 
-    // 笔画映射表
-    const STROKE_NAMES = {
-        1:"横", 2:"撇点", 3:"竖", 4:"撇折", 5:"撇", 6:"横斜钩", 7:"点", 8:"横折提",
-        9:"捺", 10:"横折弯", 11:"提", 12:"横折钩", 13:"横撇", 14:"横折折", 15:"横钩",
-        16:"竖弯钩", 17:"横折", 18:"竖折撇", 19:"竖提", 21:"竖折折", 22:"竖弯",
-        23:"横撇弯钩", 24:"竖钩", 25:"横折弯钩", 26:"竖折", 27:"横折折撇", 28:"斜钩",
-        29:"横折折折", 30:"弯钩", 31:"竖折折钩", 32:"卧钩"
-    };
-
+    // 语音朗读函数
     function speak(text) {
-        if (!text) return;
-        window.speechSynthesis.cancel(); 
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'zh-CN';
-        utterance.rate = 0.85; 
-        window.speechSynthesis.speak(utterance);
+        window.speechSynthesis.cancel(); // 必须：清除之前的语音队列
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'zh-CN';
+        msg.rate = 0.8; // 语速稍慢，听得更清楚
+        window.speechSynthesis.speak(msg);
     }
 
-    function unlockAudio() {
-        speak("语音已激活");
-        document.getElementById('audio-btn').style.display = "none";
-    }
-
-    async function initWriter(char) {
+    function playLocalChar() {
+        // 1. 第一步必须执行 speak，以解锁 Mac 浏览器的权限
+        speak("大字，一共三画。"); 
+        
         document.getElementById('target-grid').innerHTML = '';
-        document.getElementById('pinyin-display').innerText = "加载中...";
+        document.getElementById('pinyin-display').innerText = "dà";
+        document.getElementById('status-bar').innerText = "演示中...";
 
-        // 💡 关键修改：直接使用汉字库官方源，绕过 jsdelivr 
-        writer = HanziWriter.create('target-grid', char, {
-            width: 200, height: 200, padding: 5, showOutline: true,
-            strokeAnimationSpeed: 1, 
-            delayBetweenStrokes: 1500,
-            strokeColor: '#2c3e50'
+        // 2. 使用 DATA_DA 渲染，不请求任何外部 JSON
+        writer = HanziWriter.create('target-grid', '大', {
+            width: 200, height: 200, padding: 5,
+            showOutline: true,
+            strokeAnimationSpeed: 1,
+            delayBetweenStrokes: 1500, // 给语音留出间隔
+            strokeColor: '#2c3e50',
+            charDataLoader: (char, onComplete) => {
+                onComplete(DATA_DA); // 强行返回本地数据
+            }
         });
 
-        try {
-            // 设置 5 秒超时检查
-            const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
-            await Promise.race([writer.promise, timeout]);
-
-            document.getElementById('pinyin-display').innerText = pinyin(char);
-            const strokes = writer._char.strokes;
-            speak(`${char}字，一共${strokes.length}画。`);
-            
-            setTimeout(() => {
-                writer.animateCharacter({
-                    onStartStroke: function(num) {
-                        try {
-                            const typeId = writer._char.strokes[num].type;
-                            const name = STROKE_NAMES[typeId] || "";
-                            speak(`第${num + 1}笔 ${name}`);
-                        } catch (e) {
-                            speak(`第${num + 1}笔`);
-                        }
-                    }
-                });
-            }, 2000);
-        } catch (err) {
-            console.error(err);
-            document.getElementById('pinyin-display').innerText = "加载失败";
-            speak("网络加载超时。请尝试切换节点或关闭翻墙软件后重试。");
-        }
+        // 3. 2秒后开始动画并配音
+        setTimeout(() => {
+            writer.animateCharacter({
+                onStartStroke: function(num) {
+                    const strokeNames = ["横", "撇", "捺"];
+                    speak(`第 ${num + 1} 笔：${strokeNames[num]}`);
+                }
+            });
+        }, 2000);
     }
 
-    function startLearning() {
-        const char = document.getElementById('char-input').value;
-        if (char && /^[\u4e00-\u9fa5]$/.test(char)) {
-            initWriter(char);
-        }
-    }
-
+    // 页面加载时画一个静态的字
     window.onload = () => {
-        HanziWriter.create('target-grid', '大', { width: 200, height: 200, padding: 5, showOutline: true });
+        HanziWriter.create('target-grid', '大', { width: 200, height: 200, padding: 5 });
     };
 </script>
 </body>
