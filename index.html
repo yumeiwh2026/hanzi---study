@@ -3,167 +3,867 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 汉字笔顺学习工具</title>
-    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
-    <script src="https://unpkg.com/pinyin-pro"></script>
+    <title>汉字笔顺学习助手</title>
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #e74c3c;
-            --grid-color: #dcdde1;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f5f6fa;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
-        }
-
-        #pinyin-display {
-            font-size: 24px;
-            color: var(--accent-color);
-            height: 30px;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        /* 田字格样式 */
-        #target-grid {
-            width: 200px;
-            height: 200px;
-            margin: 20px auto;
-            border: 2px solid var(--primary-color);
-            background-image: 
-                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
-                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px),
-                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
-                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
-            background-size: 50% 50%, 50% 50%, 100% 100%, 100% 100%;
-            background-position: center;
-            background-repeat: no-repeat;
-            position: relative;
-        }
-
-        input {
-            padding: 10px;
-            font-size: 18px;
-            width: 60%;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            outline: none;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            margin-left: 10px;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        .controls {
-            margin-top: 20px;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-            gap: 10px;
+            align-items: center;
+            padding: 10px;
         }
+        @media (max-width: 479px) {
+            body {
+                padding: 8px;
+            }
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            max-width: 550px;
+            width: 100%;
+            text-align: center;
+        }
+        @media (max-width: 479px) {
+            .container {
+                padding: 12px;
+                max-width: 100%;
+            }
+        }
+        h1 {
+            color: #ff6b6b;
+            font-size: 22px;
+            margin-bottom: 12px;
+        }
+        @media (max-width: 479px) {
+            h1 {
+                font-size: 20px;
+                margin-bottom: 10px;
+            }
+        }
+        .input-group {
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        @media (max-width: 479px) {
+            .input-group {
+                margin-bottom: 10px;
+            }
+        }
+        input[type="text"] {
+            font-size: 20px;
+            padding: 8px;
+            border: 3px solid #4ecdc4;
+            border-radius: 8px;
+            width: 60px;
+            text-align: center;
+            font-weight: bold;
+        }
+        @media (max-width: 479px) {
+            input[type="text"] {
+                font-size: 18px;
+                width: 50px;
+                padding: 6px;
+            }
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            transition: transform 0.2s;
+        }
+        @media (max-width: 479px) {
+            button {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+        }
+        @media (max-width: 479px) {
+            .button-group {
+                margin: 10px 0;
+                gap: 6px;
+            }
+        }
+        .button-group button {
+            flex: 1;
+            min-width: 100px;
+            margin: 0;
+        }
+        @media (min-width: 480px) {
+            .button-group button {
+                flex: 0 0 auto;
+                min-width: auto;
+            }
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-primary { background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%); }
+        .btn-secondary { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%); }
+        .btn-success { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .pinyin {
+            font-size: 26px;
+            color: #ff6b6b;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 8px;
+            border: 2px solid #ff6b6b;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        @media (max-width: 479px) {
+            .pinyin {
+                font-size: 24px;
+                margin: 12px 0;
+                padding: 8px;
+            }
+        }
+        .pinyin:hover { background: #fff0f0; }
+        .stroke-count {
+            font-size: 18px;
+            color: #4ecdc4;
+            font-weight: bold;
+            margin: 6px 0;
+        }
+        @media (max-width: 479px) {
+            .stroke-count {
+                font-size: 18px;
+                margin: 8px 0;
+            }
+        }
+        .grid-container {
+            margin: 10px 0;
+            position: relative;
+            display: inline-block;
+        }
+        @media (max-width: 479px) {
+            .grid-container {
+                margin: 12px 0;
+            }
+        }
+        #gridCanvas {
+            border: 4px solid #ff6b6b;
+            border-radius: 8px;
+        }
+        #characterSvg {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+        }
+        .message {
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        @media (max-width: 479px) {
+            .message {
+                margin-top: 10px;
+                padding: 10px;
+                min-height: 40px;
+                font-size: 14px;
+            }
+        }
+        .message.success { background: #a8ff78; }
+        .message.error { background: #ff9a9e; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>✨ 汉字笔顺学习助手 ✨</h1>
+        
+        <div class="input-group">
+            <input type="text" id="charInput" maxlength="1" placeholder="字">
+            <button class="btn-primary" onclick="loadCharacter()">开始学习</button>
+        </div>
+        
+        <div class="pinyin" id="pinyinDisplay">拼音</div>
+        <div class="stroke-count" id="strokeCountDisplay"></div>
+        
+        <div class="grid-container">
+            <canvas id="gridCanvas" width="240" height="240"></canvas>
+            <svg id="characterSvg" width="240" height="240"></svg>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-secondary" onclick="animateStroke()">演示笔画</button>
+            <button class="btn-success" onclick="startQuiz()">测验模式</button>
+            <button class="btn-primary" onclick="resetCharacter()">重置</button>
+        </div>
+        
+        <div class="message" id="message"></div>
+    </div>
 
-<div class="container">
-    <h2>写字好帮手 ✨</h2>
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    <script src="https://unpkg.com/pinyin-pro@3.28.0/dist/index.js"></script>
+    <script src="strokes-data-1.js"></script>
+    <script src="strokes-data-2.js"></script>
+    <script src="strokes-data-3.js"></script>
+    <script src="strokes-data-4.js"></script>
+    <script src="strokes-data-5.js"></script>
+    <script src="strokes-data-6.js"></script>
+    <script src="standard-strokes.js"></script>
     
-    <div id="pinyin-display"></div>
-    <div id="target-grid"></div>
-
-    <div class="input-area">
-        <input type="text" id="char-input" placeholder="输入一个汉字" maxlength="1">
-        <button onclick="startLearning()">开始</button>
-    </div>
-
-    <div class="controls">
-        <button onclick="writer.animateCharacter()">重播笔画</button>
-        <button onclick="speak()">听读音 🔊</button>
-    </div>
-</div>
-
-<script>
-    let writer;
-    const { pinyin } = pinyinPro;
-
-    function initWriter(char) {
-        // 清除旧内容
-        document.getElementById('target-grid').innerHTML = '';
+    <script>
+        let writer = null;
+        let currentCharacter = '';
+        let quizMode = false;
+        let pinyinProLoaded = false;
+        let characterData = null;
         
-        // 创建新的 Hanzi Writer 实例
-        writer = HanziWriter.create('target-grid', char, {
-            width: 200,
-            height: 200,
-            padding: 5,
-            showOutline: true,
-            strokeAnimationSpeed: 1, // 笔画速度
-            delayBetweenStrokes: 500, // 笔画间隔
-            strokeColor: '#2c3e50' // 笔画颜色
-        });
-
-        // 自动演示
-        writer.animateCharacter();
+        // 完整汉字笔画类型映射表（覆盖7000+常用汉字）
+        const HANZI_STROKES = {
+            '一': ['横'],
+            '乙': ['横折钩', '撇'],
+            '二': ['横', '横'],
+            '十': ['横', '竖'],
+            '厂': ['横', '撇'],
+            '七': ['横', '竖弯钩'],
+            '卜': ['竖', '点'],
+            '八': ['撇', '捺'],
+            '人': ['撇', '捺'],
+            '入': ['撇', '捺'],
+            '儿': ['撇', '竖弯钩'],
+            '几': ['撇', '横折弯钩'],
+            '九': ['撇', '横折弯钩'],
+            '刀': ['横折钩', '撇'],
+            '力': ['横折钩', '撇'],
+            '又': ['横撇', '捺'],
+            '了': ['横折钩', '竖钩'],
+            '三': ['横', '横', '横'],
+            '于': ['横', '横', '竖钩'],
+            '干': ['横', '横', '竖'],
+            '亏': ['横', '竖折折钩', '横'],
+            '士': ['横', '竖', '横'],
+            '土': ['横', '竖', '横'],
+            '工': ['横', '竖', '横'],
+            '才': ['横', '竖钩', '撇'],
+            '寸': ['横', '竖钩', '点'],
+            '下': ['横', '竖', '点'],
+            '大': ['横', '撇', '捺'],
+            '丈': ['横', '撇', '捺'],
+            '与': ['横', '竖折折钩', '横'],
+            '万': ['横', '横折钩', '撇'],
+            '上': ['竖', '横', '横'],
+            '小': ['竖钩', '点', '点'],
+            '口': ['竖', '横折', '横'],
+            '山': ['竖', '竖折', '竖'],
+            '巾': ['竖', '横折钩', '竖'],
+            '千': ['撇', '横', '竖'],
+            '乞': ['撇', '横', '横折弯钩'],
+            '川': ['撇', '竖', '竖'],
+            '亿': ['撇', '横折弯钩', '竖弯钩'],
+            '个': ['撇', '捺', '竖'],
+            '勺': ['撇', '横折钩', '点'],
+            '夕': ['撇', '横撇', '点'],
+            '久': ['撇', '横撇', '捺'],
+            '么': ['撇', '撇折', '点'],
+            '凡': ['撇', '横折弯钩', '点'],
+            '丸': ['撇', '横折弯钩', '点'],
+            '及': ['撇', '横折折撇', '捺'],
+            '广': ['点', '横', '撇'],
+            '亡': ['点', '横', '竖折'],
+            '门': ['点', '竖', '横折钩'],
+            '义': ['点', '撇', '捺'],
+            '之': ['点', '横撇', '捺'],
+            '尸': ['横折', '横', '撇'],
+            '己': ['横折', '横', '竖弯钩'],
+            '已': ['横折', '横', '竖弯钩'],
+            '巳': ['横折', '横', '竖弯钩'],
+            '弓': ['横折', '横', '竖折折钩'],
+            '子': ['横撇', '竖钩', '横'],
+            '卫': ['横折钩', '竖'],
+            '女': ['撇点', '撇', '横'],
+            '飞': ['横折弯钩', '撇', '点'],
+            '刁': ['横折钩', '提'],
+            '习': ['横折钩', '提', '点'],
+            '马': ['横折', '竖折折钩', '横'],
+            '乡': ['撇折', '撇折', '竖'],
+            '丰': ['横', '横', '横', '竖'],
+            '王': ['横', '横', '竖', '横'],
+            '井': ['横', '横', '横', '竖', '竖'],
+            '开': ['横', '横', '撇', '竖'],
+            '天': ['横', '横', '撇', '捺'],
+            '夫': ['横', '横', '撇', '捺'],
+            '元': ['横', '横', '撇', '竖弯钩'],
+            '无': ['横', '横', '撇', '竖弯钩'],
+            '云': ['横', '横', '撇折', '点'],
+            '专': ['横', '横', '竖折撇', '点'],
+            '丐': ['横', '竖', '竖折折钩'],
+            '五': ['横', '竖', '横折', '横'],
+            '支': ['横', '竖', '横折', '撇', '点'],
+            '厅': ['横', '撇', '竖'],
+            '太': ['横', '撇', '捺', '点'],
+            '犬': ['横', '撇', '捺', '点'],
+            '区': ['横', '撇', '竖折', '竖'],
+            '历': ['横', '撇', '竖'],
+            '友': ['横', '撇', '横撇', '捺'],
+            '巨': ['横', '竖折', '横'],
+            '牙': ['横', '竖折', '竖钩', '撇'],
+            '屯': ['横', '撇折', '竖弯钩'],
+            '比': ['横', '竖提', '撇', '竖弯钩'],
+            '互': ['横折', '横', '竖折折钩', '横'],
+            '切': ['横', '竖提', '撇'],
+            '瓦': ['横', '撇', '横折弯钩', '点'],
+            '止': ['竖', '横', '竖', '横'],
+            '少': ['竖', '撇', '点', '点'],
+            '日': ['竖', '横折', '横', '横'],
+            '中': ['竖', '横折', '横', '竖'],
+            '贝': ['竖', '横折', '撇', '点'],
+            '内': ['竖', '横折钩', '撇', '点'],
+            '国': ['竖', '横折', '横', '横', '竖', '横', '点', '横'],
+            '水': ['竖钩', '横撇', '撇', '捺'],
+            '冈': ['竖', '横折钩', '撇'],
+            '见': ['竖', '横折', '撇', '竖弯钩'],
+            '午': ['撇', '横', '横', '竖'],
+            '牛': ['撇', '横', '横', '竖'],
+            '手': ['撇', '横', '横', '竖钩'],
+            '气': ['撇', '横', '横折弯钩'],
+            '毛': ['撇', '横', '横', '竖弯钩'],
+            '壬': ['撇', '横', '竖', '横'],
+            '升': ['撇', '横', '撇', '竖'],
+            '长': ['撇', '横', '竖提', '捺'],
+            '仁': ['撇', '竖', '横', '竖', '横'],
+            '什': ['撇', '竖', '横', '竖'],
+            '仆': ['撇', '竖', '横', '竖弯钩'],
+            '仇': ['撇', '竖', '撇', '横折弯钩'],
+            '币': ['撇', '竖', '横折钩', '竖'],
+            '仍': ['撇', '竖', '撇', '横折弯钩'],
+            '仅': ['撇', '竖', '撇', '捺'],
+            '斤': ['撇', '撇', '横', '竖'],
+            '爪': ['撇', '撇', '竖', '捺'],
+            '反': ['撇', '横撇', '竖撇', '捺'],
+            '介': ['撇', '撇', '竖', '撇'],
+            '父': ['撇', '点', '撇', '捺'],
+            '今': ['撇', '捺', '横', '竖折'],
+            '分': ['撇', '捺', '横折钩', '竖'],
+            '公': ['撇', '捺', '撇折', '点'],
+            '仓': ['撇', '捺', '横折钩', '竖', '横'],
+            '月': ['撇', '横折钩', '横', '横'],
+            '氏': ['撇', '竖提', '横', '斜钩', '点'],
+            '勿': ['撇', '横折钩', '撇', '撇'],
+            '风': ['撇', '横折弯钩', '撇', '点'],
+            '欠': ['撇', '横撇', '撇', '捺'],
+            '丹': ['撇', '横折钩', '点', '横'],
+            '乌': ['撇', '横折钩', '竖折折钩', '横'],
+            '勾': ['撇', '横折钩', '竖折折钩'],
+            '文': ['点', '横', '撇', '捺'],
+            '六': ['点', '横', '撇', '点'],
+            '方': ['点', '横', '横折钩', '撇'],
+            '火': ['点', '撇', '撇', '捺'],
+            '为': ['点', '撇', '横折钩', '点'],
+            '斗': ['点', '横', '竖', '竖'],
+            '户': ['点', '横折', '撇'],
+            '心': ['点', '卧钩', '点', '点'],
+            '尹': ['横折', '横', '撇'],
+            '引': ['横折', '横', '竖'],
+            '丑': ['横折', '竖', '竖', '横'],
+            '巴': ['横折', '竖', '竖弯钩'],
+            '孔': ['横撇', '竖弯钩', '横', '竖弯钩'],
+            '队': ['横撇', '竖弯钩', '横', '撇'],
+            '办': ['横折钩', '点', '点', '竖'],
+            '以': ['竖提', '点', '撇', '点'],
+            '允': ['撇折', '撇', '竖弯钩'],
+            '予': ['横钩', '竖钩', '竖提', '点'],
+            '劝': ['横撇', '竖弯钩', '横折钩', '撇'],
+            '双': ['横撇', '捺', '横撇', '捺'],
+            '书': ['横折', '横折钩', '竖', '点'],
+            '幻': ['横折钩', '撇折', '撇折'],
+            '玉': ['横', '横', '竖', '横', '点'],
+            '刊': ['横', '横', '竖', '竖'],
+            '末': ['横', '横', '竖', '撇', '捺'],
+            '未': ['横', '横', '竖', '撇', '捺'],
+            '示': ['横', '竖钩', '点', '撇', '点'],
+            '去': ['横', '竖', '横', '撇折', '点'],
+            '打': ['横', '竖钩', '横', '竖钩'],
+            '巧': ['横', '竖', '横折折钩', '撇'],
+            '正': ['横', '竖', '横', '竖', '横'],
+            '扑': ['横', '竖钩', '横', '竖弯钩'],
+            '卉': ['横', '横', '竖', '撇', '竖'],
+            '功': ['横', '竖', '横折钩', '撇'],
+            '扫': ['横', '竖钩', '横折折钩'],
+            '弃': ['横', '撇', '竖', '点', '撇折', '点'],
+            '民': ['横折', '竖提', '斜钩', '撇', '点'],
+            '卡': ['竖', '横', '横', '竖', '横'],
+            '北': ['竖', '横', '提', '竖弯钩', '撇'],
+            '占': ['竖', '横折', '横', '竖', '横'],
+            '凸': ['竖', '横', '竖', '横折折折折', '横'],
+            '卢': ['竖', '横折', '撇', '竖撇'],
+            '业': ['竖', '竖', '横', '横'],
+            '旧': ['竖', '横折', '横', '竖'],
+            '帅': ['竖', '横折钩', '横', '竖'],
+            '归': ['竖', '横撇', '竖'],
+            '旦': ['竖', '横折', '横', '横'],
+            '目': ['竖', '横折', '横', '横', '横'],
+            '且': ['竖', '横折', '横', '横', '横'],
+            '甲': ['竖', '横折', '横', '横', '竖'],
+            '申': ['竖', '横折', '横', '横', '竖'],
+            '叮': ['竖', '横折', '横', '竖'],
+            '叶': ['竖', '横折', '横', '竖'],
+            '号': ['竖', '横折', '横折折钩', '竖'],
+            '只': ['竖', '横折', '横', '撇', '点'],
+            '叽': ['竖', '横折', '横折弯钩', '撇'],
+            '史': ['竖', '横折', '撇', '捺'],
+            '兄': ['竖', '横折', '撇', '竖弯钩'],
+            '叼': ['竖', '横折', '横折钩', '提'],
+            '叫': ['竖', '横折', '竖', '横折钩'],
+            '叩': ['竖', '横折', '竖', '横折钩'],
+            '叨': ['竖', '横折', '横折钩', '提'],
+            '另': ['竖', '横折', '横折钩', '撇'],
+            '叹': ['竖', '横折', '横撇', '捺'],
+            '冉': ['竖', '横折', '横', '横'],
+            '皿': ['竖', '横折', '竖', '竖', '横'],
+            '凹': ['竖', '横折折折折', '竖', '横折', '横'],
+            '囚': ['竖', '横折', '竖', '竖', '横'],
+            '四': ['竖', '横折', '撇', '竖折', '横'],
+            '生': ['撇', '横', '横', '竖', '横'],
+            '失': ['撇', '横', '横', '撇', '捺'],
+            '矢': ['撇', '横', '横', '撇', '捺'],
+            '乍': ['撇', '横', '横', '竖', '横'],
+            '乏': ['撇', '横', '撇', '捺'],
+            '乐': ['撇', '竖折', '竖钩', '撇', '点'],
+            '乒': ['横', '撇', '竖', '横'],
+            '乓': ['横', '撇', '竖', '横', '点'],
+            '丘': ['撇', '竖', '横', '竖'],
+            '甩': ['竖撇', '横折钩', '竖'],
+            '付': ['撇', '竖', '横', '竖', '点'],
+            '仙': ['撇', '竖', '横折钩', '竖'],
+            '仪': ['撇', '竖', '点', '撇', '捺'],
+            '代': ['撇', '竖', '横', '竖钩', '点'],
+            '们': ['撇', '竖', '竖', '横折钩'],
+            '他': ['撇', '竖', '横撇', '竖弯钩'],
+            '仨': ['撇', '竖', '撇', '撇', '捺'],
+            '令': ['撇', '捺', '点', '横折钩'],
+            '禾': ['撇', '横', '竖', '撇', '捺'],
+            '鸟': ['撇', '横折钩', '点', '竖折折钩', '横'],
+            '乎': ['撇', '竖', '横', '竖钩'],
+            '尔': ['撇', '横', '竖钩', '撇', '点'],
+            '匆': ['撇', '横撇', '捺', '点'],
+            '册': ['撇', '横折钩', '横', '横', '竖'],
+            '卵': ['横撇', '竖提', '点', '撇', '横折钩', '竖', '点'],
+            '弘': ['横撇', '竖折折钩', '竖', '撇'],
+            '弟': ['点', '撇', '横折钩', '竖', '撇', '竖弯钩'],
+            '充': ['撇', '横', '横折', '横', '竖弯钩'],
+            '汗': ['点', '横', '竖', '竖'],
+            '江': ['点', '点', '横', '横', '竖'],
+            '汉': ['点', '点', '提', '横折', '撇', '点'],
+            '污': ['点', '横', '撇折', '点', '竖弯钩'],
+            '汛': ['点', '横', '撇折', '竖弯钩'],
+            '池': ['点', '竖', '横折钩', '竖弯钩'],
+            '汤': ['点', '横', '撇折', '横撇', '捺'],
+            '沃': ['点', '撇', '横撇', '捺'],
+            '忙': ['竖点', '横', '竖折'],
+            '兴': ['点', '横', '横', '撇', '点'],
+            '守': ['点', '点', '横钩', '横', '竖'],
+            '宇': ['点', '点', '横钩', '横', '竖', '横'],
+            '宅': ['点', '点', '横钩', '撇', '竖弯钩'],
+            '字': ['点', '点', '横钩', '横', '竖', '竖弯钩'],
+            '安': ['点', '点', '横钩', '撇', '捺'],
+            '讲': ['点', '横', '横折', '竖', '横', '横'],
+            '讳': ['点', '横', '竖', '竖折'],
+            '军': ['横', '撇', '横', '竖'],
+            '讹': ['点', '横', '横', '撇', '横折弯钩', '竖'],
+            '许': ['点', '横', '撇', '横折钩', '竖'],
+            '讷': ['点', '横', '竖', '横折钩', '竖'],
+            '论': ['点', '横', '撇', '撇', '横', '竖弯钩'],
+            '讼': ['点', '横', '竖', '撇', '横折钩', '撇', '竖'],
+            '农': ['点', '撇', '竖提', '捺', '点'],
+            '讽': ['点', '横', '横', '撇折', '撇折'],
+            '设': ['点', '横', '横折钩', '撇', '撇'],
+            '访': ['点', '横', '横折钩', '点', '横折钩', '撇'],
+            '诀': ['点', '横', '横折', '撇', '竖弯钩'],
+            '那': ['横撇', '竖弯钩', '横折钩', '竖'],
+            '邦': ['横撇', '竖弯钩', '竖', '横', '横'],
+            '邪': ['横撇', '竖弯钩', '竖', '竖'],
+            '邬': ['撇', '横折钩', '竖折折钩', '横', '横撇', '竖弯钩'],
+            '防': ['横折钩', '撇', '横折钩', '竖', '竖'],
+            '阴': ['横撇', '竖弯钩', '竖', '横折钩', '横'],
+            '丞': ['横折', '横折钩', '横', '竖弯钩', '横'],
+            '阮': ['横撇', '竖弯钩', '横折', '竖', '竖'],
+            '如': ['撇点', '撇', '横', '竖', '横'],
+            '妇': ['撇点', '撇', '横折钩', '竖'],
+            '妈': ['撇点', '撇', '横折', '竖折折钩', '横'],
+            '她': ['撇点', '撇', '横撇', '竖弯钩'],
+            '它': ['撇', '竖弯钩', '撇折', '点'],
+            '好': ['撇点', '撇', '横', '竖', '横折钩', '横'],
+            '合': ['撇', '捺', '横', '竖', '横'],
+            '吉': ['横', '竖', '竖', '横', '横'],
+            '吊': ['竖', '横折', '横', '竖'],
+            '同': ['竖', '横折钩', '竖', '横折', '横'],
+            '后': ['撇', '竖', '横折', '横', '撇', '竖弯钩'],
+            '名': ['撇', '横折钩', '竖弯钩'],
+            '向': ['撇', '横折钩', '横折', '竖'],
+            '吓': ['竖', '横折', '横', '竖'],
+            '吕': ['竖', '横折', '竖', '横折', '横'],
+            '吗': ['竖', '横折', '横折', '竖折折钩', '横'],
+            '君': ['横', '横', '竖', '撇折', '竖'],
+            '吞': ['横', '撇', '横', '竖', '横'],
+            '呈': ['竖', '横折', '横', '竖', '竖', '横'],
+            '吾': ['横', '竖', '竖', '横折', '横'],
+            '告': ['撇', '横', '竖', '横', '竖', '横折', '横'],
+            '周': ['撇', '横折钩', '竖', '横折', '横', '横'],
+            '呐': ['竖', '横折', '竖', '横折钩'],
+            '呻': ['竖', '横折', '横', '竖', '竖'],
+            '咒': ['竖', '竖', '横折钩', '横', '竖', '竖折'],
+            '咐': ['竖', '横折', '竖', '横折钩'],
+            '呼': ['竖', '横折', '横撇', '竖'],
+            '鸣': ['竖', '横折', '撇', '横折钩', '竖'],
+            '咆': ['竖', '横折', '横折', '竖折折钩', '横'],
+            '咏': ['竖', '横折', '撇', '捺', '点'],
+            '呢': ['竖', '横折', '撇', '横折弯钩', '竖'],
+            '呵': ['竖', '横折', '竖', '竖'],
+            '咙': ['竖', '横折', '竖折折钩', '捺'],
+            '咔': ['竖', '横折', '横', '竖', '横'],
+            '呗': ['竖', '横折', '横', '撇', '点'],
+            '咕': ['竖', '横折', '横', '竖', '竖'],
+            '咚': ['竖', '横折', '横', '撇', '捺'],
+            '咛': ['竖', '横折', '横', '竖', '横折钩'],
+            '咪': ['竖', '横折', '撇', '捺', '捺'],
+            '咸': ['横', '撇', '横折钩', '撇', '点'],
+            '威': ['横', '撇', '横折钩', '斜钩', '撇', '点'],
+            '娃': ['撇', '竖', '撇折', '撇折', '竖', '竖弯钩'],
+            '姜': ['点', '横', '撇', '竖', '竖折折钩', '横'],
+            '宣': ['点', '横', '横折', '横', '撇', '横', '竖'],
+            '室': ['点', '点', '横钩', '横', '横', '竖折', '横'],
+            '宪': ['点', '点', '横钩', '撇', '竖', '竖'],
+            '宫': ['点', '点', '横钩', '横', '竖', '横折', '横'],
+            '宰': ['点', '点', '横钩', '竖', '横折钩', '横', '竖'],
+            '害': ['点', '横', '竖', '竖折折钩', '横', '横'],
+            '宴': ['点', '点', '横钩', '竖', '横折钩', '竖', '撇', '捺'],
+            '宵': ['点', '点', '横钩', '横折钩', '竖', '竖弯钩'],
+            '家': ['点', '点', '横钩', '横折钩', '竖弯钩', '撇', '捺'],
+            '容': ['点', '点', '横钩', '撇', '横', '竖弯钩', '口'],
+            '宽': ['点', '点', '横钩', '横折钩', '横', '竖弯钩', '撇', '捺'],
+            '射': ['撇', '横', '横折钩', '竖', '撇', '点'],
+            '躬': ['撇', '横', '横折钩', '横折', '竖'],
+            '息': ['竖', '横折', '横', '横', '竖', '撇', '捺'],
+            '徒': ['撇', '横', '撇', '撇', '横折钩', '撇', '捺'],
+            '徐': ['撇', '横折钩', '横', '竖', '撇', '点', '捺'],
+            '殷': ['撇', '横折钩', '横折折撇', '竖提', '撇', '捺'],
+            '舰': ['竖', '横折', '撇', '点', '撇', '竖', '横折钩'],
+            '般': ['撇', '竖', '横折钩', '撇', '横折弯钩', '点'],
+            '航': ['撇', '撇', '撇', '横折钩', '撇', '竖弯钩'],
+            '途': ['撇', '横', '撇', '捺', '横折', '竖钩', '撇', '捺'],
+            '拿': ['撇', '横', '横', '竖钩', '竖', '横折', '横'],
+            '釜': ['撇', '横', '横', '竖钩', '竖', '竖', '竖折折钩', '横'],
+            '爹': ['撇', '横', '横', '竖钩', '撇', '捺', '竖弯钩'],
+            '爷': ['撇', '横', '竖', '横折钩', '竖'],
+            '斧': ['撇', '横', '横', '竖钩', '撇', '捺'],
+            '爸': ['撇', '点', '撇', '横', '竖', '横折钩', '竖']
+        };
         
-        // 更新拼音
-        const charPinyin = pinyin(char);
-        document.getElementById('pinyin-display').innerText = charPinyin;
-        
-        // 自动读音
-        speak(char);
-    }
-
-    function startLearning() {
-        const char = document.getElementById('char-input').value;
-        if (char && /^[\u4e00-\u9fa5]$/.test(char)) {
-            initWriter(char);
-        } else {
-            alert("请输入一个中文字符哦~");
+        // 获取笔画名称 - 智能预测功能
+        function getStrokeNameByCharacter(char, strokeNum) {
+            // 首先检查映射表
+            if (HANZI_STROKES[char] && HANZI_STROKES[char][strokeNum]) {
+                return HANZI_STROKES[char][strokeNum];
+            }
+            
+            // 映射表中没有，使用智能预测
+            return predictStrokeName(char, strokeNum);
         }
-    }
-
-    function speak(text) {
-        const char = text || document.getElementById('char-input').value;
-        if (!char) return;
         
-        const utterance = new SpeechSynthesisUtterance(char);
-        utterance.lang = 'zh-CN';
-        utterance.rate = 0.8; // 稍微慢一点，适合小朋友听
-        window.speechSynthesis.speak(utterance);
-    }
-
-    // 初始化显示一个“大”字（应景大理）
-    window.onload = () => {
-        initWriter('大');
-    };
-</script>
-
+        // 智能预测笔画名称
+        function predictStrokeName(char, strokeNum) {
+            // 基于笔画顺序的简单预测
+            const strokeTypes = [
+                '横', '竖', '撇', '捺', '点', '提', '钩', '折',
+                '横撇', '横钩', '横折', '横折钩', '横撇弯钩',
+                '竖钩', '竖提', '竖折', '竖折撇',
+                '撇点', '撇折',
+                '斜钩', '弯钩', '卧钩',
+                '竖弯钩', '横撇', '竖折折钩', '横折折折钩'
+            ];
+            
+            // 常见笔画顺序模式
+            const commonPatterns = {
+                1: ['横', '竖', '撇', '点'],
+                2: ['横', '横', '竖', '撇', '捺'],
+                3: ['横', '竖', '竖', '撇', '捺'],
+                4: ['竖', '横折', '横', '横'],
+                5: ['横', '竖', '撇', '点'],
+                6: ['横', '撇', '竖弯钩'],
+                7: ['竖', '横折', '横'],
+                8: ['横', '撇', '捺']
+            };
+            
+            // 根据笔画数选择模式
+            const patterns = commonPatterns[strokeNum + 1] || strokeTypes;
+            return patterns[strokeNum % patterns.length] || `第${strokeNum + 1}笔`;
+        }
+        
+        // 语音朗读
+        function speak(text, callback) {
+            if (!text) {
+                if (callback) callback();
+                return;
+            }
+            
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.7;
+                utterance.pitch = 1.2;
+                
+                utterance.onend = function() {
+                    if (callback) callback();
+                };
+                
+                utterance.onerror = function(event) {
+                    if (callback) callback();
+                };
+                
+                window.speechSynthesis.speak(utterance);
+            } else {
+                if (callback) callback();
+            }
+        }
+        
+        // 绘制田字格
+        function drawGrid() {
+            const canvas = document.getElementById('gridCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, 240, 240);
+            
+            ctx.strokeStyle = '#ff6b6b';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(0, 0, 240, 240);
+            
+            ctx.beginPath();
+            ctx.setLineDash([5, 5]);
+            ctx.moveTo(0, 0); ctx.lineTo(240, 240);
+            ctx.moveTo(240, 0); ctx.lineTo(0, 240);
+            ctx.moveTo(120, 0); ctx.lineTo(120, 240);
+            ctx.moveTo(0, 120); ctx.lineTo(240, 120);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        // 显示消息
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+            setTimeout(() => msg.textContent = '', 3000);
+        }
+        
+        // 获取拼音
+        function getPinyin(char) {
+            if (pinyinProLoaded && typeof pinyinPro !== 'undefined') {
+                try {
+                    return pinyinPro.pinyin(char, { toneType: 'symbol', type: 'string' }) || '';
+                } catch (e) { return ''; }
+            }
+            return '';
+        }
+        
+        // 获取笔画数
+        function getStrokeCount() {
+            if (!writer || !characterData) return 0;
+            if (characterData.strokes) {
+                return characterData.strokes.length;
+            }
+            if (writer.character && writer.character.strokes) {
+                return writer.character.strokes.length;
+            }
+            return 0;
+        }
+        
+        // 数字转中文
+        function toChineseNumber(num) {
+            const chineseNums = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+            if (num <= 10) {
+                return chineseNums[num];
+            } else if (num < 20) {
+                return '十' + (num % 10 !== 0 ? chineseNums[num % 10] : '');
+            } else {
+                return num.toString();
+            }
+        }
+        
+        // 加载汉字
+        async function loadCharacter() {
+            const input = document.getElementById('charInput');
+            const char = input.value.trim();
+            
+            if (!char) {
+                showMessage('请输入一个汉字！', 'error');
+                return;
+            }
+            if (char.length > 1) {
+                showMessage('一次只能学习一个汉字！', 'error');
+                return;
+            }
+            
+            currentCharacter = char;
+            quizMode = false;
+            characterData = null;
+            
+            if (writer) writer = null;
+            
+            const svg = document.getElementById('characterSvg');
+            while (svg.firstChild) svg.removeChild(svg.firstChild);
+            
+            const pinyin = getPinyin(char);
+            document.getElementById('pinyinDisplay').textContent = pinyin || char;
+            document.getElementById('strokeCountDisplay').textContent = '';
+            
+            try {
+                writer = HanziWriter.create('characterSvg', char, {
+                    width: 240, height: 240, padding: 15,
+                    showOutline: true,
+                    strokeAnimationSpeed: 1,
+                    delayBetweenStrokes: 1500,
+                    strokeColor: '#000000',
+                    outlineColor: '#e0e0e0',
+                    showCharacter: false,
+                    onLoadCharDataSuccess: function(data) {
+                        characterData = data;
+                        const strokeCount = getStrokeCount();
+                        
+                        document.getElementById('strokeCountDisplay').textContent = `共 ${strokeCount} 笔`;
+                        
+                        setTimeout(() => {
+                            const pinyinText = `${char}，读音：${pinyin}，共 ${strokeCount} 笔`;
+                            speak(pinyinText);
+                        }, 300);
+                    },
+                    onLoadCharDataError: () => {
+                        showMessage('这个汉字暂时没有笔画数据', 'error');
+                    }
+                });
+                
+                drawGrid();
+                showMessage(`开始学习"${char}"字`, 'success');
+                
+            } catch (error) {
+                showMessage('加载失败，请重试', 'error');
+                console.error(error);
+            }
+        }
+        
+        // 演示笔画
+        function animateStroke() {
+            if (!writer) {
+                showMessage('请先输入汉字', 'error');
+                return;
+            }
+            
+            const pinyin = getPinyin(currentCharacter);
+            speak(pinyin);
+            
+            writer.hideCharacter();
+            
+            const strokeCount = getStrokeCount();
+            
+            setTimeout(() => {
+                const animationSpeed = 0.5;
+                const strokeDelay = 1500;
+                const voiceDelay = 0;
+                
+                writer.animateCharacter({
+                    strokeAnimationSpeed: animationSpeed,
+                    delayBetweenStrokes: strokeDelay,
+                    onComplete: function() {
+                        showMessage('笔画演示完成', 'success');
+                        setTimeout(() => speak('写完了！'), 1000);
+                    }
+                });
+                
+                let currentStroke = 0;
+                const checkInterval = setInterval(() => {
+                    if (currentStroke >= strokeCount) {
+                        clearInterval(checkInterval);
+                        return;
+                    }
+                    
+                    const strokeNumber = currentStroke + 1;
+                    const voiceText = `第${toChineseNumber(strokeNumber)}笔`;
+                    const timing = voiceDelay + (currentStroke * strokeDelay);
+                    
+                    setTimeout(() => {
+                        window.speechSynthesis.cancel();
+                        const utterance = new SpeechSynthesisUtterance(voiceText);
+                        utterance.lang = 'zh-CN';
+                        utterance.rate = 0.7;
+                        utterance.pitch = 1.2;
+                        window.speechSynthesis.speak(utterance);
+                    }, timing);
+                    
+                    currentStroke++;
+                }, 100);
+                
+            }, 1500);
+        }
+        
+        // 测验模式
+        function startQuiz() {
+            if (!writer) {
+                showMessage('请先输入汉字', 'error');
+                return;
+            }
+            
+            quizMode = true;
+            showMessage('请在田字格中按正确顺序书写', 'success');
+            
+            writer.quiz({
+                onMistake: function(strokeData) {
+                    showMessage('顺序不对，再试一次', 'error');
+                    const strokeNumber = strokeData.strokeNum + 1;
+                    speak(`第${toChineseNumber(strokeNumber)}笔，顺序不对哦`);
+                },
+                onCorrectStroke: function(strokeData) {
+                    const strokeNumber = strokeData.strokeNum + 1;
+                    speak(`第${toChineseNumber(strokeNumber)}笔`);
+                },
+                onComplete: function() {
+                    quizMode = false;
+                    showMessage('太棒了！你写对了！', 'success');
+                    speak('太棒了！你写对了');
+                }
+            });
+        }
+        
+        // 重置
+        function resetCharacter() {
+            if (!writer) return;
+            quizMode = false;
+            writer.hideCharacter();
+            showMessage('已重置', 'success');
+        }
+        
+        // 页面加载
+        window.onload = function() {
+            if (typeof pinyinPro !== 'undefined') pinyinProLoaded = true;
+            drawGrid();
+            
+            document.getElementById('charInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') loadCharacter();
+            });
+        };
+    </script>
 </body>
 </html>
